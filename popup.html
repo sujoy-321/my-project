@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial;
+      width: 300px;
+      padding: 10px;
+    }
+    select, button {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    .download-item {
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h3>Download Video</h3>
+  <label>Quality:</label>
+  <select id="quality">
+    <option>360p</option>
+    <option>480p</option>
+    <option selected>720p</option>
+    <option>1080p</option>
+    <option>2k</option>
+    <option>4k</option>
+  </select>
+  <button id="downloadBtn">Download</button>
+  <div id="status">Status: Idle</div>
+  <hr />
+  <h4>Ongoing Downloads</h4>
+  <div id="downloadList"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
