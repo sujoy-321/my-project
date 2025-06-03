@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: youtube-downloader      # This is your app's name on Render
+    env: python                   # Environment type
+    buildCommand: pip install -r requirements.txt   # How to install dependencies
+    startCommand: python app.py   # How to start your app
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
