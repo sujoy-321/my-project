@@ -1,6 +1,6 @@
 const statusEl = document.getElementById('status');
 
-const source = new EventSource("https://your-backend.onrender.com/progress");
+const source = new EventSource("https://my-project-hijj.onrender.com/progress");
 
 source.onmessage = (event) => {
   statusEl.textContent = event.data;

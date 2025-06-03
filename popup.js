@@ -2,7 +2,7 @@ const downloadBtn = document.getElementById("downloadBtn");
 const statusElement = document.getElementById("status");
 const listElement = document.getElementById("downloadList");
 
-const SERVER_URL = "https://your-backend.onrender.com"; // <- Change this!
+const SERVER_URL = "https://my-project-hijj.onrender.com"; // <- Change this!
 
 function updateStatus(status) {
   statusElement.textContent = "Status: " + status;

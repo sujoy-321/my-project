@@ -9,7 +9,7 @@
     "default_icon": "icon.png"
   },
   "host_permissions": [
-    "https://your-backend.onrender.com/*"
+    "https://my-project-hijj.onrender.com/*"
   ],
   "background": {
     "service_worker": "background.js"
