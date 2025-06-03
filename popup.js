@@ -2,7 +2,7 @@ const downloadBtn = document.getElementById("downloadBtn");
 const statusElement = document.getElementById("status");
 const listElement = document.getElementById("downloadList");
 
-const SERVER_URL = "https://my-project-hijj.onrender.com"; // <- Change this!
+const SERVER_URL = "https://my-project-hijj.onrender.com";
 
 function updateStatus(status) {
   statusElement.textContent = "Status: " + status;
@@ -32,13 +32,13 @@ function renderDownloads(downloads) {
   });
 }
 
-function listenForProgress(videoUrl) {
+function listenForProgress() {
   const source = new EventSource(`${SERVER_URL}/progress`);
 
   source.onmessage = function (event) {
-    const cleanText = event.data.replace(/\x1B\[[0-9;]*[mK]/g, ''); // Remove ANSI
+    const cleanText = event.data.replace(/\x1B\[[0-9;]*[mK]/g, ''); // Remove ANSI codes
     updateStatus(cleanText);
-    saveProgress(videoUrl, cleanText);
+    saveProgress("", cleanText);
   };
 
   source.onerror = function () {
@@ -50,30 +50,35 @@ function listenForProgress(videoUrl) {
 downloadBtn.addEventListener("click", () => {
   const quality = document.getElementById("quality").value;
 
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const videoUrl = tabs[0].url;
 
-    fetch(`${SERVER_URL}/download`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: videoUrl, quality: quality })
-    })
-    .then(response => response.text())
-    .then(data => {
-      updateStatus("Downloading...");
-      saveProgress(videoUrl, "Downloading...");
-      listenForProgress(videoUrl);
-    })
-    .catch(err => {
-      updateStatus("Error: Could not connect to backend.");
+    if (!videoUrl.includes("youtube.com/watch")) {
+      updateStatus("Error: Not a valid YouTube video URL.");
+      return;
+    }
+
+    // Send download request to background.js
+    chrome.runtime.sendMessage({
+      action: "downloadVideo",
+      url: videoUrl,
+      quality: quality
+    }, (response) => {
+      if (response && response.status === "started") {
+        updateStatus("Download started...");
+        saveProgress(videoUrl, "Download started...");
+        listenForProgress();
+      } else if (response && response.status === "error") {
+        updateStatus("Error: " + response.message);
+      } else {
+        updateStatus("Unknown error occurred.");
+      }
     });
   });
 });
 
+// Render previously saved downloads on popup open
 chrome.storage.local.get("downloads", (data) => {
   renderDownloads(data.downloads || []);
-  if ((data.downloads || []).length > 0) {
-    const last = data.downloads[data.downloads.length - 1];
-    listenForProgress(last.url);
-  }
+  listenForProgress();
 });

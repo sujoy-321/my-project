@@ -3,15 +3,20 @@
   "name": "YouTube Downloader",
   "version": "1.0",
   "description": "Download YouTube videos by quality with progress display.",
-  "permissions": ["storage", "tabs", "scripting"],
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": "icon.png"
-  },
+  "permissions": [
+    "storage",
+    "tabs",
+    "scripting",
+    "downloads"
+  ],
   "host_permissions": [
     "https://my-project-hijj.onrender.com/*"
   ],
   "background": {
     "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
   }
 }

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, Response
 from flask_cors import CORS
 import yt_dlp
 import threading
@@ -8,13 +8,10 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# === Store current download status for SSE ===
 current_status = {"text": "Idle"}
 
-# === Set download directory ===
 DOWNLOAD_DIR = os.path.join(os.path.expanduser("~"), "Downloads")
 
-# === Quality format map ===
 QUALITY_MAP = {
     "360p": "bestvideo[height=360]+bestaudio",
     "480p": "bestvideo[height=480]+bestaudio",
@@ -24,7 +21,6 @@ QUALITY_MAP = {
     "4k": "bestvideo[height=2160]+bestaudio"
 }
 
-# === yt_dlp progress hook ===
 def progress_hook(d):
     if d['status'] == 'finished':
         current_status['text'] = '✅ Download complete'
@@ -34,7 +30,6 @@ def progress_hook(d):
         eta = d.get('eta', '')
         current_status['text'] = f"⬇️ {percent} at {speed}, ETA: {eta}s"
 
-# === Background download thread ===
 def download_video(url, quality):
     format_string = QUALITY_MAP.get(quality, QUALITY_MAP["720p"])
 
@@ -47,7 +42,7 @@ def download_video(url, quality):
         'noplaylist': True,
         'quiet': True,
         'progress_hooks': [progress_hook],
-        'force_overwrites': True  # Always redownload regardless of file
+        'force_overwrites': True
     }
 
     try:
@@ -56,24 +51,20 @@ def download_video(url, quality):
     except Exception as e:
         current_status['text'] = f"❌ Error: {str(e)}"
 
-    # Send final status if nothing set
     if "✅" not in current_status['text'] and "❌" not in current_status['text']:
         current_status['text'] = '✅ Already downloaded'
 
-# === Start download endpoint ===
 @app.route("/download", methods=["POST"])
 def start_download():
     data = request.get_json()
     url = data.get("url")
     quality = data.get("quality", "720p")
 
-    # Start in background thread
     thread = threading.Thread(target=download_video, args=(url, quality))
     thread.start()
 
     return "Download started"
 
-# === SSE progress endpoint ===
 @app.route("/progress")
 def progress():
     def generate():
@@ -86,6 +77,5 @@ def progress():
 
     return Response(generate(), mimetype="text/event-stream")
 
-# === Run Flask app ===
 if __name__ == "__main__":
     app.run(debug=True)
