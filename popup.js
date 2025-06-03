@@ -2,6 +2,8 @@ const downloadBtn = document.getElementById("downloadBtn");
 const statusElement = document.getElementById("status");
 const listElement = document.getElementById("downloadList");
 
+const SERVER_URL = "https://your-backend.onrender.com"; // <- Change this!
+
 function updateStatus(status) {
   statusElement.textContent = "Status: " + status;
 }
@@ -31,10 +33,10 @@ function renderDownloads(downloads) {
 }
 
 function listenForProgress(videoUrl) {
-  const source = new EventSource("http://localhost:5000/progress");
+  const source = new EventSource(`${SERVER_URL}/progress`);
 
   source.onmessage = function (event) {
-    const cleanText = event.data.replace(/\x1B\[[0-9;]*[mK]/g, ''); // Remove ANSI codes
+    const cleanText = event.data.replace(/\x1B\[[0-9;]*[mK]/g, ''); // Remove ANSI
     updateStatus(cleanText);
     saveProgress(videoUrl, cleanText);
   };
@@ -51,7 +53,7 @@ downloadBtn.addEventListener("click", () => {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     const videoUrl = tabs[0].url;
 
-    fetch("http://localhost:5000/download", {
+    fetch(`${SERVER_URL}/download`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: videoUrl, quality: quality })
@@ -68,11 +70,8 @@ downloadBtn.addEventListener("click", () => {
   });
 });
 
-// Restore list when popup opens
 chrome.storage.local.get("downloads", (data) => {
   renderDownloads(data.downloads || []);
-  
-  // Reconnect to progress stream
   if ((data.downloads || []).length > 0) {
     const last = data.downloads[data.downloads.length - 1];
     listenForProgress(last.url);
