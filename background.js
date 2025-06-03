@@ -2,11 +2,10 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.set({ downloads: [] });
 });
 
-// Listen for download requests from popup.js
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "downloadVideo") {
     const { url, quality } = message;
-    console.log("Background: Download requested", url, quality);
+    console.log("[Background] Download request:", url, quality);
 
     fetch("https://my-project-hijj.onrender.com/download", {
       method: "POST",
@@ -18,15 +17,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return res.text();
     })
     .then(data => {
-      console.log("Background: Server response:", data);
+      console.log("[Background] Server response:", data);
       sendResponse({ status: "started" });
     })
     .catch(err => {
-      console.error("Background: Fetch failed:", err);
+      console.error("[Background] Fetch error:", err);
       sendResponse({ status: "error", message: err.message });
     });
 
-    // Return true to keep sendResponse async
+    // Keep the messaging channel open for async sendResponse
     return true;
   }
 });
